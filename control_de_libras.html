@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestor de Libras</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+
+  <div class="min-h-screen flex flex-col items-center px-4 py-8">
+
+    <!-- Header -->
+    <div class="w-full max-w-xl flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Gestor de Peso</h1>
+      <button id="toggleTheme" class="px-4 py-2 rounded-xl bg-gray-800 text-white dark:bg-yellow-400 dark:text-black">
+        Cambiar tema
+      </button>
+    </div>
+
+    <!-- Input -->
+    <div class="w-full max-w-xl bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
+      <div class="flex flex-col sm:flex-row gap-3">
+        <input
+          id="inputName"
+          type="text"
+          placeholder="Nombre..."
+          class="flex-1 px-4 py-3 rounded-xl border dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none"
+        />
+        <button
+          id="addBtn"
+          class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 active:scale-95 transition"
+        >
+          Guardar
+        </button>
+      </div>
+    </div>
+
+    <!-- Lista -->
+    <div id="list" class="w-full max-w-xl mt-6 space-y-4"></div>
+
+  </div>
+
+<script>
+
+const listEl = document.getElementById('list')
+const input = document.getElementById('inputName')
+
+let data = JSON.parse(localStorage.getItem('items')) || []
+
+function saveData() {
+  localStorage.setItem('items', JSON.stringify(data))
+}
+
+function render() {
+  listEl.innerHTML = ''
+
+  data.forEach((item, index) => {
+    const div = document.createElement('div')
+    div.className = "bg-white dark:bg-gray-800 p-4 rounded-2xl shadow flex flex-col sm:flex-row justify-between items-center gap-4"
+
+    div.innerHTML = `
+      <div class="text-gray-800 dark:text-white font-semibold">
+        ${item.name}
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button onclick="decrease(${index})" class="px-4 py-2 bg-red-500 text-white rounded-xl text-lg">-5</button>
+        <span class="text-lg font-bold text-gray-800 dark:text-white">${item.weight} lb</span>
+        <button onclick="increase(${index})" class="px-4 py-2 bg-green-500 text-white rounded-xl text-lg">+5</button>
+      </div>
+
+      <button onclick="removeItem(${index})" class="px-4 py-2 bg-gray-700 text-white rounded-xl hover:bg-black">
+        Eliminar
+      </button>
+    `
+
+    listEl.appendChild(div)
+  })
+}
+
+function addItem() {
+  const name = input.value.trim()
+
+  if (!name) return
+
+  data.push({ name, weight: 0 })
+  input.value = ''
+
+  saveData()
+  render()
+}
+
+function increase(index) {
+  data[index].weight += 5
+  saveData()
+  render()
+}
+
+function decrease(index) {
+  data[index].weight -= 5
+  saveData()
+  render()
+}
+
+function removeItem(index) {
+  data.splice(index, 1)
+  saveData()
+  render()
+}
+
+// Eventos
+
+document.getElementById('addBtn').addEventListener('click', addItem)
+
+input.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') addItem()
+})
+
+// Tema
+const toggleBtn = document.getElementById('toggleTheme')
+
+function loadTheme() {
+  const theme = localStorage.getItem('theme')
+  if (theme === 'dark') document.documentElement.classList.add('dark')
+}
+
+function toggleTheme() {
+  document.documentElement.classList.toggle('dark')
+  const isDark = document.documentElement.classList.contains('dark')
+  localStorage.setItem('theme', isDark ? 'dark' : 'light')
+}
+
+toggleBtn.addEventListener('click', toggleTheme)
+
+loadTheme()
+render()
+
+</script>
+
+</body>
+</html>
